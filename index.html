@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>calcular notas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            width: 180px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 80px;
+            padding: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .resultado {
+            margin-top: 20px;
+        }
+        .add-button {
+            background-color: #28a745;
+            margin-left: 10px;
+        }
+        .add-button:hover {
+            background-color: #218838;
+        }
+        .remove-button {
+            background-color: #dc3545;
+            margin-left: 10px;
+        }
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calcular Notas</h2>
+        <div class="input-group">
+            <label for="nota_minima">Nota mínima para aprobar:</label>
+            <input type="number" id="nota_minima" step="0.01" min="0" value="10.5" required>
+        </div>
+        <div class="input-group">
+            <label for="nota_maxima">Nota máxima:</label>
+            <input type="number" id="nota_maxima" step="0.01" min="0" value="20" required>
+        </div>
+        <div id="notas">
+            <!-- Aquí se generarán dinámicamente los campos para ingresar pesos y notas -->
+            <div class="input-group">
+                <input type="number" class="nota" placeholder="Nota" step="0.01" min="0" max="20" required>
+                <input type="number" class="peso" placeholder="Peso (%)" step="0.01" min="0" max="100" required>
+                <button class="add-button" onclick="agregarFila()">+</button>
+                <button class="remove-button" onclick="quitarFila(this)">-</button>
+            </div>
+        </div>
+        <button onclick="calcularNotaFinal()">Calcular</button>
+        <div id="resultado" class="resultado">
+            <!-- Aquí se mostrará el resultado -->
+        </div>
+    </div>
+
+    <script>
+        function agregarFila() {
+            const notasDiv = document.getElementById('notas');
+            const nuevaFila = document.createElement('div');
+            nuevaFila.className = 'input-group';
+            nuevaFila.innerHTML = `
+                <input type="number" class="nota" placeholder="Nota" step="0.01" min="0" max="20" required>
+                <input type="number" class="peso" placeholder="Peso (%)" step="0.01" min="0" max="100" required>
+                <button class="add-button" onclick="agregarFila()">+</button>
+                <button class="remove-button" onclick="quitarFila(this)">-</button>
+            `;
+            notasDiv.appendChild(nuevaFila);
+        }
+
+        function quitarFila(button) {
+            const fila = button.parentNode;
+            fila.parentNode.removeChild(fila);
+        }
+
+        function calcularNotaFinal() {
+            const notaMinima = parseFloat(document.getElementById('nota_minima').value);
+            const notaMaxima = parseFloat(document.getElementById('nota_maxima').value);
+            const notas = document.querySelectorAll('.nota');
+            const pesos = document.querySelectorAll('.peso');
+            let totalPeso = 0;
+            let totalPuntosObtenidos = 0;
+
+            // Calcular el promedio parcial ponderado
+            for (let i = 0; i < notas.length; i++) {
+                const nota = parseFloat(notas[i].value);
+                const peso = parseFloat(pesos[i].value);
+                totalPeso += peso;
+                totalPuntosObtenidos += nota * peso / 100;
+            }
+
+            const promedioParcial = totalPuntosObtenidos / (totalPeso / 100);
+
+            // Calcular la nota necesaria en el porcentaje restante
+            const porcentajeRestante = 100 - totalPeso;
+            const notaNecesaria = (notaMinima - promedioParcial * (totalPeso / 100)) / (porcentajeRestante / 100);
+
+            // Mostrar el resultado
+            let resultadoHTML = `<p>Resumen de tus notas:</p>`;
+            resultadoHTML += `<p>Total porcentaje ingresado: ${totalPeso}%</p>`;
+            resultadoHTML += `<p>Total puntos obtenidos: ${totalPuntosObtenidos.toFixed(2)}</p>`;
+            resultadoHTML += `<p>Promedio parcial: ${promedioParcial.toFixed(2)}</p>`;
+
+            if (notaNecesaria > notaMaxima) {
+                resultadoHTML += `<p>Necesitas una nota de ${notaNecesaria.toFixed(2)}, lo cual es imposible. Debes revisar tus notas y pesos ingresados.</p>`;
+            } else if (notaNecesaria < 0) {
+                resultadoHTML += `<p>¡Felicidades! Ya has aprobado el curso.</p>`;
+            } else {
+                resultadoHTML += `<p>Necesitas obtener una nota de ${notaNecesaria.toFixed(2)} en el ${porcentajeRestante}% restante para aprobar el curso con una nota de ${notaMinima}.</p>`;
+            }
+
+            document.getElementById('resultado').innerHTML = resultadoHTML;
+        }
+    </script>
+</body>
+</html>
