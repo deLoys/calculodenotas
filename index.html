@@ -59,11 +59,50 @@
         .remove-button:hover {
             background-color: #c82333;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Cuanto me falta para aprobar?</h2>
+        <div id="notas">
+            <label for="nota_maxima">Ingresa las notas y pesos(%) con las que cuenta<br><br></label>
+            <!-- Aquí se generarán dinámicamente los campos para ingresar pesos y notas -->
+        </div>
+        <button onclick="calcularNotaFinal()">Calcular</button><br><br>
         <div class="input-group">
             <label for="nota_minima">Nota mínima para aprobar:</label>
             <input type="number" id="nota_minima" step="0.01" min="0" value="10.5" required>
@@ -72,13 +111,17 @@
             <label for="nota_maxima">Nota máxima:</label>
             <input type="number" id="nota_maxima" step="0.01" min="0" value="20" required>
         </div>
-        <div id="notas">
-            <label for="nota_maxima">Ingresa las notas y pesos(%) con las que cuenta<br><br></label>
-            <!-- Aquí se generarán dinámicamente los campos para ingresar pesos y notas -->
-        </div>
-        <button onclick="calcularNotaFinal()">Calcular</button>
         <div id="resultado" class="resultado">
             <!-- Aquí se mostrará el resultado -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modalResumen" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <h2>Resumen de tus Notas</h2>
+            <p id="resumenContenido"></p>
         </div>
     </div>
 
@@ -123,26 +166,40 @@
             const porcentajeRestante = 100 - totalPeso;
             const notaNecesaria = (notaMinima - promedioParcial * (totalPeso / 100)) / (porcentajeRestante / 100);
 
-            // Mostrar el resultado
-            let resultadoHTML = `<p>Resumen de tus notas:</p>`;
-            resultadoHTML += `<p>Total porcentaje ingresado: ${totalPeso}%</p>`;
-            resultadoHTML += `<p>Total puntos obtenidos: ${totalPuntosObtenidos.toFixed(2)}</p>`;
-            resultadoHTML += `<p>Promedio parcial: ${promedioParcial.toFixed(2)}</p>`;
+            // Generar el resumen
+            resumen = ``;
+            resumen += `Total porcentaje ingresado: ${totalPeso}%\n`;
+            resumen += `Total puntos obtenidos: ${totalPuntosObtenidos.toFixed(2)}\n`;
+            resumen += `Promedio parcial: ${promedioParcial.toFixed(2)}\n`;
 
             if (notaNecesaria > notaMaxima) {
-                resultadoHTML += `<p>Necesitas una nota de ${notaNecesaria.toFixed(2)}, lo cual es imposible. Debes revisar tus notas y pesos ingresados.</p>`;
+                resumen += `Necesitas una nota de ${notaNecesaria.toFixed(2)}, lo cual es imposible. Debes revisar tus notas y pesos ingresados.\n`;
             } else if (notaNecesaria < 0) {
-                resultadoHTML += `<p>¡Felicidades! Ya has aprobado el curso.</p>`;
+                resumen += `¡Felicidades! Ya has aprobado el curso.\n`;
             } else {
-                resultadoHTML += `<p>Necesitas obtener una nota de ${notaNecesaria.toFixed(2)} en el ${porcentajeRestante}% restante para aprobar el curso con una nota de ${notaMinima}.</p>`;
+                resumen += `Necesitas obtener una nota de ${notaNecesaria.toFixed(2)} en el ${porcentajeRestante}% restante para aprobar el curso con una nota de ${notaMinima}.\n`;
             }
 
-            document.getElementById('resultado').innerHTML = resultadoHTML;
+            // Mostrar el resumen en un modal
+            document.getElementById('resumenContenido').innerText = resumen;
+            document.getElementById('modalResumen').style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalResumen').style.display = 'none';
         }
 
         // Generar 3 filas por defecto
         for (let i = 0; i < 3; i++) {
             agregarFila();
+        }
+
+        // Cerrar el modal al hacer clic fuera del contenido del modal
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalResumen');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
         }
     </script>
 </body>
